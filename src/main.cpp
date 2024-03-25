@@ -12,13 +12,11 @@ void executionTime(const std::function<void()> &function) {
 }
 
 void testCorrectness(KaryHeap& heap) {
-    // Insert elements in a random order
     std::vector<int> elements = {5, 2, 8, 6, 1, 4, 7, 3, 9, 0};
     for (int elem : elements) {
         heap.insert(elem);
     }
 
-    // Extract elements and expect them to be in sorted order
     int prev = heap.extractMin();
     while (!heap.isEmpty()) {
         int current = heap.extractMin();
@@ -32,21 +30,19 @@ void testCorrectness(KaryHeap& heap) {
 }
 
 void testEfficiency(int k, int N) {
-    KaryHeap heap(k);
+    KaryHeap heap(k, N);
 
     std::cout << "Testing efficiency for k = " << k << " with N = " << N << " elements." << std::endl;
 
-    // Measure insertion time
     auto insertAction = [&]() {
         for (int i = 0; i < N; ++i) {
-            heap.insert(rand() % N);  // Insert a random number
+            heap.insert(rand() % N);
         }
     };
 
     std::cout << "Insertion time: ";
     executionTime(insertAction);
 
-    // Measure extraction time
     auto extractAction = [&]() {
         while (!heap.isEmpty()) {
             heap.extractMin();
@@ -59,7 +55,7 @@ void testEfficiency(int k, int N) {
 
 int main() {
 
-    KaryHeap heap(2); // visualization of the heap
+    KaryHeap heap(2, 20);
 
     std::vector<int> elements = {15, 10, 20, 30, 40, 50, 60, 70, 80, 90};
 
@@ -80,20 +76,17 @@ int main() {
     }
     std::cout << std::endl;
 
-    // Test for correctness with a small, known set of elements
-    KaryHeap testHeap(3); // Using a ternary heap for the correctness test
+    KaryHeap testHeap(3, 10); // Using a ternary heap for the correctness test
     testCorrectness(testHeap);
 
-    // Test for efficiency with larger values of N and different ks
-    std::vector<int> ks = {2, 4, 8, 16};  // Different k values to test
-    int N = 10000000;  // 10 million elements
+    std::vector<int> ks = {2, 4, 8, 16}; // Different k values to test
+    int N = 10000000; // 10 million elements
 
     for (int k : ks) {
         std::cout << std::endl;
         testEfficiency(k, N);
         std::cout << std::endl;
     }
-
 
     return 0;
 }

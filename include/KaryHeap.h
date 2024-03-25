@@ -9,7 +9,7 @@
 class KaryHeap {
   public:
 
-  explicit KaryHeap(int k);
+  explicit KaryHeap(int k, int maxSize);
   void insert(int element);
   int extractMin();
   int peek() const;
@@ -17,8 +17,10 @@ class KaryHeap {
   void printHeap() const;
 
   private:
-  std::vector<int> heap;
+  int *heap;
   int k; 
+  int size;
+  int maxSize;
   void heapifyUp(int i);
   void heapifyDown(int i);
   int parentIndex(int i) const;
