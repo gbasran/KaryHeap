@@ -2,6 +2,10 @@
 #include <iostream>
 #include <chrono>
 #include <functional>
+#include <vector>
+#include <random>
+#include <algorithm>
+#include <iomanip>
 
 void executionTime(const std::function<void()> &function) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -53,7 +57,51 @@ void testEfficiency(int k, int N) {
     executionTime(extractAction);
 }
 
+struct ExperimentTimes {
+    long long seqTime;
+    long long ranTime;
+};
+
+ExperimentTimes testHeapPerformance(int k, int N) {
+    KaryHeap seqHeap(k, N);
+    KaryHeap ranHeap(k, N);
+    ExperimentTimes times;
+
+    // Sequential insertion
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i = 0; i < N; ++i) {
+        seqHeap.insert(i);
+    }
+    while (!seqHeap.isEmpty()) {
+        seqHeap.extractMin();
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    times.seqTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    // Random insertion
+    std::vector<int> elements(N);
+    std::iota(elements.begin(), elements.end(), 0);
+    std::shuffle(elements.begin(), elements.end(), std::default_random_engine());
+
+    start = std::chrono::high_resolution_clock::now();
+    for(int elem : elements) {
+        ranHeap.insert(elem);
+    }
+    while (!ranHeap.isEmpty()) {
+        ranHeap.extractMin();
+    }
+    end = std::chrono::high_resolution_clock::now();
+    times.ranTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    return times;
+}
+
 int main() {
+    int k = 3; // Or any other k value you wish to test
+    int l = 1000000; // Number of elements to insert and extract
+    ExperimentTimes times = testHeapPerformance(k, l);
+    std::cout << "Sequential time: " << times.seqTime << " microseconds" << std::endl;
+    std::cout << "Random time: " << times.ranTime << " microseconds" << std::endl;
 
     KaryHeap heap(2, 20);
 
