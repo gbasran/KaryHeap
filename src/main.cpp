@@ -12,7 +12,7 @@ void executionTime(const std::function<void()> &function) {
     function();
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Execution time-> " << duration.count() << " milliseconds" << std::endl;
+    std::cout << "Execution time-> " << duration.count() << " ms" << std::endl;
 }
 
 void testCorrectness(KaryHeap& heap) {
@@ -57,56 +57,60 @@ void testEfficiency(int k, int N) {
     executionTime(extractAction);
 }
 
-struct ExperimentTimes {
-    long long seqTime;
-    long long ranTime;
-};
+void testSequentialEfficiency(int k, int N) {
+    KaryHeap heap(k, N);
+    std::cout << "Sequential efficiency for k = " << k << " with N = " << N << " elements." << std::endl;
 
-ExperimentTimes testHeapPerformance(int k, int N) {
-    KaryHeap seqHeap(k, N);
-    KaryHeap ranHeap(k, N);
-    ExperimentTimes times;
+    auto sequentialInsert = [&]() {
+        for (int i = 0; i < N; ++i) {
+            heap.insert(i);
+        }
+    };
 
-    // Sequential insertion
-    auto start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < N; ++i) {
-        seqHeap.insert(i);
-    }
-    while (!seqHeap.isEmpty()) {
-        seqHeap.extractMin();
-    }
-    auto end = std::chrono::high_resolution_clock::now();
-    times.seqTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    auto extractAll = [&]() {
+        while (!heap.isEmpty()) {
+            heap.extractMin();
+        }
+    };
 
-    // Random insertion
-    std::vector<int> elements(N);
-    std::iota(elements.begin(), elements.end(), 0);
-    std::shuffle(elements.begin(), elements.end(), std::default_random_engine());
+    std::cout << "Sequential insertion time: ";
+    executionTime(sequentialInsert);
 
-    start = std::chrono::high_resolution_clock::now();
-    for(int elem : elements) {
-        ranHeap.insert(elem);
-    }
-    while (!ranHeap.isEmpty()) {
-        ranHeap.extractMin();
-    }
-    end = std::chrono::high_resolution_clock::now();
-    times.ranTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-    return times;
+    std::cout << "Sequential extraction time: ";
+    executionTime(extractAll);
 }
 
+void testRandomEfficiency(int k, int N) {
+    KaryHeap heap(k, N);
+    std::cout << "Random efficiency for k = " << k << " with N = " << N << " elements." << std::endl;
+
+    auto randomInsert = [&]() {
+        std::vector<int> elements(N);
+        std::iota(elements.begin(), elements.end(), 0);
+        std::shuffle(elements.begin(), elements.end(), std::default_random_engine());
+        for (int elem : elements) {
+            heap.insert(elem);
+        }
+    };
+
+    auto extractAll = [&]() {
+        while (!heap.isEmpty()) {
+            heap.extractMin();
+        }
+    };
+
+    std::cout << "Random insertion time: ";
+    executionTime(randomInsert);
+
+    std::cout << "Random extraction time: ";
+    executionTime(extractAll);
+}
+
+
 int main() {
-    int k = 3; // Or any other k value you wish to test
-    int l = 1000000; // Number of elements to insert and extract
-    ExperimentTimes times = testHeapPerformance(k, l);
-    std::cout << "Sequential time: " << times.seqTime << " microseconds" << std::endl;
-    std::cout << "Random time: " << times.ranTime << " microseconds" << std::endl;
-
+    int N = 1000000;
     KaryHeap heap(2, 20);
-
     std::vector<int> elements = {15, 10, 20, 30, 40, 50, 60, 70, 80, 90};
-
     for (int elem : elements) {
         heap.insert(elem);
         std::cout << "After inserting " << elem << ":" << std::endl;
@@ -114,9 +118,7 @@ int main() {
         std::cout << std::endl;
     }
     std::cout << std::endl;
-
     std::cout << "Starting extraction:" << std::endl;
-
     while (!heap.isEmpty()) {
         std::cout << std::endl;
         std::cout << "Extracted " << heap.extractMin() << std::endl;
@@ -124,15 +126,45 @@ int main() {
     }
     std::cout << std::endl;
 
+
     KaryHeap testHeap(3, 10); // Using a ternary heap for the correctness test
     testCorrectness(testHeap);
+    std::cout << std::endl;
 
+    std::cout << "Testing efficiency for different k values" << std::endl;
     std::vector<int> ks = {2, 4, 8, 16}; // Different k values to test
-    int N = 10000000; // 10 million elements
+    for (int k : ks) {
+        testEfficiency(k, N);
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 
     for (int k : ks) {
+        testSequentialEfficiency(k, N);
         std::cout << std::endl;
-        testEfficiency(k, N);
+    }
+    std::cout << std::endl;
+
+    for (int k : ks) {
+        testRandomEfficiency(k, N);
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Now testing efficiency with different sizes of N" << std::endl;
+    std::vector<int> sizes = {1000000, 5000000, 10000000, 20000000, 50000000};
+    for (int size : sizes) {
+        testEfficiency(3, size);
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    for(int size : sizes) {
+        testSequentialEfficiency(3, size);
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    for(int size : sizes) {
+        testRandomEfficiency(3, size);
         std::cout << std::endl;
     }
 
